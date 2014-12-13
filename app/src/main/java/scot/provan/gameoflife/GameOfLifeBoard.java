@@ -12,6 +12,7 @@ public class GameOfLifeBoard {
         private Cell south;
         private Cell west;
         private int color;
+        private boolean active;
 
         public Cell getNorth() {
             return north;
@@ -52,6 +53,56 @@ public class GameOfLifeBoard {
         public void setColor(int color) {
             this.color = color;
         }
+
+        public boolean isActive() {
+            return active;
+        }
+
+        public void performGame() {
+            int nAlive = 0;
+            if (north != null && north.isActive()) {
+                nAlive++;
+            }
+            if (north != null && north.getEast() != null && north.getEast().isActive()) {
+                nAlive++;
+            }
+            if (east != null && east.isActive()) {
+                nAlive++;
+            }
+            if (east != null && east.getSouth() != null && east.getSouth().isActive()) {
+                nAlive++;
+            }
+            if (south != null && south.isActive()) {
+                nAlive++;
+            }
+            if (south != null && south.getWest() != null && south.getWest().isActive()) {
+                nAlive++;
+            }
+            if (west != null && west.isActive()) {
+                nAlive++;
+            }
+            if (west != null && west.getNorth() != null && west.getNorth().isActive()) {
+                nAlive++;
+            }
+            if (active) {
+                if (nAlive < 2) {
+                    active = false;
+                } else if (nAlive < 4) {
+                    active = true;
+                } else {
+                    active = false;
+                }
+            } else {
+                if (nAlive == 3) {
+                    active = true;
+                }
+            }
+
+        }
+
+        public void activateCell() {
+            active = true;
+        }
     }
 
     private Cell[][] cells;
@@ -89,8 +140,17 @@ public class GameOfLifeBoard {
                 c.setEast(east);
                 c.setSouth(south);
                 c.setWest(west);
-                int color = Color.argb(255, 0, 0, 0);
+                int color = Color.argb(255, 255, 0, 0);
                 c.setColor(color);
+            }
+        }
+    }
+
+    public void performGame() {
+        for (int i = 0; i < cells.length; i++) {
+            for (int j = 0; j < cells[i].length; j++) {
+                Cell c = cells[i][j];
+                c.performGame();
             }
         }
     }

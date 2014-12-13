@@ -12,6 +12,9 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 
 /**
  * TODO: document your custom view class.
@@ -83,6 +86,15 @@ public class GameView extends View {
         invalidateTextPaintAndMeasurements();
     }
 
+    public void performGame() {
+        if (board != null) {
+            board.performGame();
+            invalidate();
+        } else {
+            Log.e("PERFORM_GAME", "board is null");
+        }
+    }
+
     private void invalidateTextPaintAndMeasurements() {
         mTextPaint.setTextSize(mExampleDimension);
         mTextPaint.setColor(mExampleColor);
@@ -104,13 +116,14 @@ public class GameView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.i("GAME_VIEW_ON_TOUCH_EVENT", String.format("x: %f, y: %f", event.getX(), event.getY()));
-        int yIndex = (int) event.getY() / mNumberY;
-        int xIndex = (int) event.getX() / mNumberX;
+        float xAcross = event.getX() / (float) mSquareSize;
+        float yAcross = event.getY() / (float) mSquareSize;
+        int xIndex = Math.round(xAcross);
+        int yIndex = Math.round(yAcross);
+        Log.i("GAME_VIEW_ON_TOUCH_EVENT", String.format("x (e): %f, x (f): %f, x (i): %d, y (f): %f, y (i): %d", event.getX(), xAcross, xIndex, yAcross, yIndex));
         try {
-            Log.i("GAME_VIEW_CELL_INDICES", String.format("xIndex: %d, yIndex; %d", xIndex, yIndex));
             GameOfLifeBoard.Cell cell = board.getCell(xIndex, yIndex);
-            cell.setColor(Color.argb(255, 255, 0, 0));
+            cell.activateCell();
             invalidate();
         } catch (GameOfLifeBoard.CellOutOfBoundsException e) {
             Log.e("ON_TOUCH_CELL_OOB", "cell out of bounds", e);
@@ -140,7 +153,12 @@ public class GameView extends View {
             for (int x = 0; x < mNumberX; x++) {
                 try {
                     GameOfLifeBoard.Cell c = board.getCell(x, y);
-                    int color = c.getColor();
+                    int color = 0;
+                    if (c.isActive()) {
+                        color = c.getColor();
+                    } else {
+                        color = Color.argb(255, 0, 0, 0);
+                    }
                     float startX = x * mSquareSize;
                     float startY = y * mSquareSize;
                     float endX = startX + mSquareSize;
